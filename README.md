@@ -1,8 +1,11 @@
 
-# estudos_python
+# Estudos de python 
 
 <!-- badges: start -->
 <!-- badges: end -->
 
-The goal of estudos_python is to ...
+Backup dos estudos de python
 
+## Class e objetos
+
+## Operadores
