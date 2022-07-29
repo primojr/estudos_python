@@ -1,7 +1,7 @@
-
-# Estudos de python 
+# Estudos de python
 
 <!-- badges: start -->
+
 <!-- badges: end -->
 
 Backup dos estudos de python
