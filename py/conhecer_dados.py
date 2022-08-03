@@ -2,6 +2,7 @@
 ## Conhecer os dados 
 import pandas as pd
 
+
 # Ler dataframe
 
 df = pd.read_csv("date/WA_Fn-UseC_-Telco-Customer-Churn.csv")
