@@ -43,3 +43,8 @@ df.loc[9:,['gender','Churn']] # Selecinar a parti da 10 linhas das colunas gener
 colunas = df.columns[1:5]
 linhas = [0,9,99]
 df.loc[linhas, colunas]
+
+
+# Count 
+df['Churn'].value_counts() # Absoluto
+df['Churn'].value_counts()/df['Churn'].value_counts().sum() # Proporção
