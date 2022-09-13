@@ -23,3 +23,5 @@ ax.set_title('Renda', fontsize = 18)
 ax.set_xlabel('R$', fontsize = 14)
 ax
 
+
+
