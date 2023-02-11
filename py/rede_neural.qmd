@@ -1,0 +1,212 @@
+---
+jupyter: python3
+---
+
+<a href="https://colab.research.google.com/github/primojr/estudos_python/blob/master/py/rede_neural.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
+
+# Objetivo:
+
+## Treinar o modelo usando `MLPClassifier` e comprar o resultado do `randon_forest`
+
+## 1.Importar bibliotecas
+
+```{python}
+#| id: SulEQ-C2JFOI
+#| id: SulEQ-C2JFOI
+from sklearn import datasets 
+from sklearn.neural_network import  MLPClassifier 
+
+# # Bibliotecas Auxiliares
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+np.random.seed(13)
+
+df = pd.read_csv("dfFAmostra.csv", delimiter=";")
+
+# # TensorFlow e tf.keras
+# import tensorflow as tf
+# from tensorflow import keras
+
+
+# print(tf.__version__)
+```
+
+```{python}
+#| id: '-FZy0UNak5Gv'
+#| colab: {base_uri: 'https://localhost:8080/', height: 226}
+#| id: '-FZy0UNak5Gv'
+#| outputId: 963f9013-b6b8-4380-b3d5-10cf4eb031c4
+df.head(2)
+```
+
+# 2. Ajustes na base
+
+```{python}
+#| id: M8Cj_YdbkDiw
+#| colab: {base_uri: 'https://localhost:8080/'}
+#| id: M8Cj_YdbkDiw
+#| outputId: 3d3db893-fc71-4ff0-db80-d88d58f5503a
+# Sys
+df['system'] = df['system'].replace('android','1')
+df['system'] = df['system'].replace('ios','0')
+df['system'] = df['system'].astype(float)
+
+# # Classe cep
+df['class_cep'].value_counts()
+df['class_cep'] = df['class_cep'].replace('A.Ruim','0')
+df['class_cep'] = df['class_cep'].replace('B.Neutro','1')
+df['class_cep'] = df['class_cep'].replace('C.Medio','2')
+df['class_cep'] = df['class_cep'].replace('D.Bom','3')
+df['class_cep'] = df['class_cep'].replace('E.MuitoBom','4')
+df['class_cep'] = df['class_cep'].astype(float)
+
+
+## Binario resposta
+df.loc[df['classe1'] == 'ComCartaoApp', 'Class'] = 1
+df.loc[df['classe1'] != 'ComCartaoApp', 'Class'] = 0
+df = df.drop('classe1',axis=1)
+df.head()
+
+
+# Remover na()
+df = df.dropna()
+df = df.reset_index()
+
+#I Tipos dos dados
+df.dtypes
+```
+
+# 3. Separar amostra e treino
+
+```{python}
+#| id: IjgfYCGVOQlx
+#| id: IjgfYCGVOQlx
+#df = df.loc[:,df.columns[1:]]
+X = df.loc[:, df.columns[2:14]]
+y = df.loc[:,['Class']]
+
+n_aleatorio = np.arange(df.shape[0])
+np.random.shuffle(n_aleatorio)
+
+X_train = X.loc[n_aleatorio[:3000],:]
+X_test  = X.loc[n_aleatorio[3000:],:]
+
+y_train = y.loc[n_aleatorio[:3000],:]
+y_test  = y.loc[n_aleatorio[3000:],:]
+```
+
+# 4. Treino do modelo
+
+## 4.2 MPLClassifier
+
+-   Paramentros: -hidden_layer_sizes =
+    -   activation = Função de ativação\
+    -   max_inter = Maximo de interação\
+    -   learning_rate_init =
+
+```{python}
+#| id: z8eBh9eLR-n6
+#| colab: {base_uri: 'https://localhost:8080/'}
+#| id: z8eBh9eLR-n6
+#| outputId: 410becd6-5dac-4150-d349-100515f802fc
+from pandas.core.common import random_state
+clf = MLPClassifier(solver = 'adam',
+                    hidden_layer_sizes=(2,) ,
+                    learning_rate_init=0.00001, 
+                    activation='logistic',
+                    max_iter = 1500,
+                    random_state = 1
+                    )
+
+clf.fit(X_train, y_train)
+
+y_pred = clf.predict_proba(X_test)
+y_pred
+```
+
+### 4.2.1 Validar ajuste
+
+```{python}
+#| id: oX-Q--NdWoRu
+#| id: oX-Q--NdWoRu
+#| outputId: d3730c36-d23f-4957-9b6f-78f425e667df
+#| colab: {base_uri: 'https://localhost:8080/', height: 433}
+# Categorizar a Classe de previsão
+y_linha = pd.DataFrame(y_pred)
+y_linha.loc[y_linha[1] >= .5, 'Class'] = 1
+y_linha.loc[y_linha[1] <  .5, 'Class'] = 0 
+
+from sklearn.metrics import accuracy_score
+accuracy_score(y_test, y_linha['Class'])
+```
+
+## 4.2 Treino usando keras
+
+```{python}
+#| id: 1SNoekXcPctU
+#| id: 1SNoekXcPctU
+import tensorflow as tf
+from tensorflow import keras
+tf.random.set_seed(42)
+```
+
+```{python}
+#| id: 1v8sF0yePw82
+#| id: 1v8sF0yePw82
+#| outputId: d4ab5165-fcf1-4551-d828-6b45a39c215c
+#| colab: {base_uri: 'https://localhost:8080/'}
+model = tf.keras.Sequential([
+    tf.keras.layers.Dense(128, activation='relu'),
+    tf.keras.layers.Dense(256, activation='relu'),
+    tf.keras.layers.Dense(256, activation='relu'),
+    tf.keras.layers.Dense(1, activation='sigmoid')
+])
+
+model.compile(
+    loss = tf.keras.losses.binary_crossentropy,
+    optimizer = tf.keras.optimizers.Adam(lr=0.001),
+    metrics=[
+        tf.keras.metrics.BinaryAccuracy(name='accuracy'),
+        tf.keras.metrics.Precision(name='precision'),
+        tf.keras.metrics.Recall(name='recall')
+    ]
+)
+
+history = model.fit(X_train, y_train, epochs=100)
+```
+
+```{python}
+#| id: CRTZ64iYTzMI
+#| id: CRTZ64iYTzMI
+#| outputId: f3d0db08-f428-46a0-e0bb-8de6f3430af0
+#| colab: {base_uri: 'https://localhost:8080/', height: 324}
+import pandas as pd
+import matplotlib.pyplot as plt
+
+pd.DataFrame(history.history).plot(figsize = (8,5))
+plt.grid(True)
+plt.gca().set_ylim(0,1)
+plt.show()
+```
+
+```{python}
+#| id: BOQKN8gQQhoF
+#| id: BOQKN8gQQhoF
+y_pred = model.predict(X_test)
+```
+
+```{python}
+#| id: bItrqLXWTy1g
+#| id: bItrqLXWTy1g
+#| outputId: a4b0827f-7238-46e7-8831-0badaa74a88e
+#| colab: {base_uri: 'https://localhost:8080/'}
+# Categorizar a Classe de previsão
+y_linha = pd.DataFrame(y_pred)
+y_linha.loc[y_linha[0] >= .5, 'Class'] = 1
+y_linha.loc[y_linha[0] <  .5, 'Class'] = 0 
+
+#from sklearn.metrics import accuracy_score
+accuracy_score(y_test, y_linha['Class'])
+```
