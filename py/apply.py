@@ -25,15 +25,13 @@ def desc_missing(vetor):
   n_vetor = vetor.size              # Tamando total do vetor 
   perc_missing = null_count/n_vetor # Calculcar o percentual de valores faltantes
   
-  return ['d': null_count, 'ss': perc_missing]
+  return  null_count, perc_missing
 
 
 titanic.apply(desc_missing)
 
 # 2
-def prop_faltantes(vetor):
-  """
-  Calcular o percentual de valores faltantes de um vector
-  """
-  
+
+titanic['age'].mean()
+
 

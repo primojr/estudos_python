@@ -15,6 +15,7 @@ y = iris.target
 tree_clf = DecisionTreeClassifier(max_depth = 2)
 tree_clf.fit(X,y)
 
+
 # Visualizaçao
 from sklearn.tree import export_graphviz
 
@@ -26,3 +27,8 @@ export_graphviz(
   ,rounded = True
   ,filled = True
 )
+
+
+titanic.query('sex == "male" & age < 25')
+titanic[titanic['sex'] == 'male' && titanic['age'] <= 25]
+
